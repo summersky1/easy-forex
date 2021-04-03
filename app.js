@@ -8,15 +8,16 @@ const displayElement = document.querySelector('#display')
 
 const getResults = async () => {  
     try {
-        const response =  await fetch(requestUrl)
-        if(response.ok){
-            let jsonResponse = await response.json()
-            displayElement.innerHTML = JSON.stringify(jsonResponse)
-        }
+        const response = await axios.get(requestUrl)
+        renderResults(response.data)
     }
     catch(error) {
         console.log(error)
     }
+}
+
+function renderResults(jsonResponse) {
+    displayElement.innerHTML = JSON.stringify(jsonResponse)
 }
 
 getResults()
