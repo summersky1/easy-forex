@@ -1,6 +1,17 @@
 const displayElement = document.querySelector('#display')
 const endpoint = 'https://api.ratesapi.io/api/'
-const targetCurrencies = ['GBP','USD','EUR','JPY','CAD','AUD','KRW','SGD','HKD','INR']
+const currencyInfo = {
+    GBP: 'gb',
+    USD: 'us',
+    EUR: 'eu',
+    JPY: 'jp',
+    CAD: 'ca',
+    AUD: 'au',
+    KRW: 'kr',
+    SGD: 'sg',
+    HKD: 'hk',
+    INR: 'in',
+}
 
 let baseCurrency = 'GBP'
 let date = 'latest'
@@ -8,7 +19,7 @@ let requestUrl = endpoint + date
 
 const queryParams = {
     base: baseCurrency,
-    symbols: targetCurrencies.join(',')
+    symbols: Object.keys(currencyInfo).join(',')
 }
 
 const getResults = async () => {  
@@ -30,7 +41,9 @@ function renderResults(jsonResponse) {
     let tableElement = document.createElement('table')
     tableElement.classList.add('table', 'table-bordered', 'table-hover', 'table-striped', 'mt-3')
     let trHead = document.createElement('tr')
+    trHead.classList.add('bg-primary', 'text-light')
     let thCurrency = document.createElement('th')
+    thCurrency.appendChild(generateFlagImageElement(baseCurrency))
     thCurrency.appendChild(document.createTextNode(baseCurrency))
     trHead.appendChild(thCurrency)
     let thRate = document.createElement('th')
@@ -44,6 +57,7 @@ function renderResults(jsonResponse) {
     for (const [currency, rate] of Object.entries(results)) {
         let tr = document.createElement('tr')
         let tdCurrency = document.createElement('td')
+        tdCurrency.appendChild(generateFlagImageElement(currency))
         tdCurrency.appendChild(document.createTextNode(currency))
         tr.appendChild(tdCurrency)
         let tdRate = document.createElement('td')
@@ -52,6 +66,15 @@ function renderResults(jsonResponse) {
         tBodyElement.appendChild(tr)
     }
     displayElement.appendChild(tableElement)
+}
+
+function generateFlagImageElement(currency) {
+    let tdFlag = document.createElement('img')
+    let countryCode = currencyInfo[currency]
+    tdFlag.src = `https://flagcdn.com/56x42/${countryCode}.png`
+    tdFlag.width = 28
+    tdFlag.classList.add('mr-2', 'mt-n1')
+    return tdFlag
 }
 
 getResults()
