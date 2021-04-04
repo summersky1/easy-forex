@@ -45,32 +45,30 @@ function renderResults(jsonResponse) {
     
     let tableElement = document.createElement('table')
     tableElement.classList.add('table', 'table-bordered', 'table-hover', 'table-striped', 'mt-3', 'animate__animated', 'animate__fadeIn')
-    let trHead = document.createElement('tr')
-    trHead.classList.add('bg-primary', 'text-light')
-    let thCurrency = document.createElement('th')
-    thCurrency.appendChild(generateFlagImageElement(baseCurrency))
-    thCurrency.appendChild(document.createTextNode(baseCurrency))
-    trHead.appendChild(thCurrency)
-    let thRate = document.createElement('th')
-    thRate.appendChild(document.createTextNode(1))
-    trHead.appendChild(thRate)
-    tableElement.appendChild(trHead)
-
     let tBodyElement = document.createElement('tbody') // needed for hover
     tableElement.appendChild(tBodyElement)
 
+    tBodyElement.appendChild(generateTableRow(baseCurrency, 1)) // add base currency first to top of table
     for (const [currency, rate] of Object.entries(results)) {
-        let tr = document.createElement('tr')
-        let tdCurrency = document.createElement('td')
-        tdCurrency.appendChild(generateFlagImageElement(currency))
-        tdCurrency.appendChild(document.createTextNode(currency))
-        tr.appendChild(tdCurrency)
-        let tdRate = document.createElement('td')
-        tdRate.appendChild(document.createTextNode(rate))
-        tr.appendChild(tdRate)
-        tBodyElement.appendChild(tr)
+        tBodyElement.appendChild(generateTableRow(currency, rate))
     }
     displayElement.appendChild(tableElement)
+}
+
+function generateTableRow(currency, rate) {
+    let currencyElement = document.createElement('td')
+    currencyElement.appendChild(generateFlagImageElement(currency))
+    currencyElement.appendChild(document.createTextNode(currency))
+    let rateElement = document.createElement('td')
+    rateElement.appendChild(document.createTextNode(rate))
+
+    let rowElement = document.createElement('tr')
+    rowElement.appendChild(currencyElement)
+    rowElement.appendChild(rateElement)
+    if (currency === baseCurrency) {
+        rowElement.classList.add('bg-primary', 'text-light')
+    }
+    return rowElement
 }
 
 function generateFlagImageElement(currency) {
