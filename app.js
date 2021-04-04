@@ -1,4 +1,6 @@
 const displayElement = document.querySelector('#display')
+const baseCurrencySelect = document.querySelector('#baseCurrencySelect')
+
 const endpoint = 'https://api.ratesapi.io/api/'
 const currencyInfo = {
     GBP: 'gb',
@@ -77,4 +79,29 @@ function generateFlagImageElement(currency) {
     return tdFlag
 }
 
-getResults()
+function renderBaseCurrencySelection() {
+    for (const currency of Object.keys(currencyInfo)) {
+        let optionElement = document.createElement('option')
+        optionElement.innerHTML = '&nbsp;&nbsp;' + currency
+        if (currency === baseCurrency) {
+            optionElement.setAttribute('selected', '')
+        }
+        baseCurrencySelect.appendChild(optionElement)
+    }
+}
+
+function main() {
+    baseCurrencySelect.addEventListener('change', function(event) {
+        event.preventDefault()
+        while(displayElement.firstChild){
+            displayElement.removeChild(displayElement.lastChild)
+        }
+        baseCurrency = this.value.trim()
+        queryParams.base = baseCurrency
+        getResults()
+    })
+    renderBaseCurrencySelection()
+    getResults()
+}
+
+main()
