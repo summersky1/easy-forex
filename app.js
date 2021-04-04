@@ -44,7 +44,7 @@ function renderResults(jsonResponse) {
     let results = jsonResponse.rates
     
     let tableElement = document.createElement('table')
-    tableElement.classList.add('table', 'table-bordered', 'table-hover', 'table-striped', 'mt-3')
+    tableElement.classList.add('table', 'table-bordered', 'table-hover', 'table-striped', 'mt-3', 'animate__animated', 'animate__fadeIn')
     let trHead = document.createElement('tr')
     trHead.classList.add('bg-primary', 'text-light')
     let thCurrency = document.createElement('th')
