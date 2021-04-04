@@ -1,4 +1,5 @@
 const displayElement = document.querySelector('#display')
+const chart = setupChart()
 const baseCurrencySelect = document.querySelector('#baseCurrencySelect')
 
 const endpoint = 'https://api.ratesapi.io/api/'
@@ -16,7 +17,7 @@ const currencyInfo = {
 }
 
 let baseCurrency = 'GBP'
-let date = 'latest'
+let specifiedDate = 'latest'
 
 function getQueryParams(baseCurrency) {
     let targetCurrencies = Object.keys(currencyInfo)
@@ -27,28 +28,37 @@ function getQueryParams(baseCurrency) {
     }
 }
 
-const getResults = async (queryParams) => {  
+async function fetchRates(queryParams, date = null) {  
     try {
-        const response = await axios.get(endpoint + date, {
+        let requestUrl = endpoint
+        if (date === null) {
+            requestUrl += specifiedDate
+        } else {
+            requestUrl += date
+        }
+        const response = await axios.get(requestUrl, {
             params: queryParams
         })
-        renderResults(response.data)
+        return response.data
     }
     catch(error) {
         console.log(error)
     }
 }
 
-function renderResults(jsonResponse) {
-    let results = jsonResponse.rates
-    
+async function fetchAndDisplayRates(queryParams) {
+    let jsonResponse = await fetchRates(queryParams)
+    displayRates(jsonResponse.rates)
+}
+
+function displayRates(rates) {    
     let tableElement = document.createElement('table')
     tableElement.classList.add('table', 'table-bordered', 'table-hover', 'table-striped', 'mt-3', 'animate__animated', 'animate__fadeIn')
     let tBodyElement = document.createElement('tbody') // needed for hover
     tableElement.appendChild(tBodyElement)
 
     tBodyElement.appendChild(generateTableRow(baseCurrency, 1)) // add base currency first to top of table
-    for (const [currency, rate] of Object.entries(results)) {
+    for (const [currency, rate] of Object.entries(rates)) {
         tBodyElement.appendChild(generateTableRow(currency, rate))
     }
     displayElement.appendChild(tableElement)
@@ -101,7 +111,7 @@ function setupDateSelection() {
         dateFormat: "Y-m-d",
         maxDate: "today",
         onChange: function(selectedDates, dateStr, instance) {
-            date = dateStr
+            specifiedDate = dateStr
             updateResults()
         },
     })
@@ -111,13 +121,43 @@ function updateResults() {
     while(displayElement.firstChild) {
         displayElement.removeChild(displayElement.lastChild)
     }
-    getResults(getQueryParams(baseCurrency))
+    fetchAndDisplayRates(getQueryParams(baseCurrency))
+}
+
+async function populateChart() {
+    const dates = ['2021-01-01','2021-02-01','2021-03-01','2021-04-01']
+    const promises = []
+    dates.forEach(date => {
+        promises.push(fetchRates(getQueryParams(baseCurrency), date))
+    })
+    let responseList = await Promise.all(promises)
+    for (let i = 0; i < dates.length; i++) {
+        chart.data.datasets[0].data.push({ x: dates[i], y: responseList[i].rates.USD })
+    }
+    chart.update()
+}
+
+function setupChart() {
+    let ctx = document.querySelector('#chartCanvas').getContext('2d');
+    return new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: 'GBP/USD',
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.2,
+                },
+            ]
+        },
+    });
 }
 
 function main() {
     setupBaseCurrencySelection()
     setupDateSelection()
-    getResults(getQueryParams(baseCurrency))
+    fetchAndDisplayRates(getQueryParams(baseCurrency))
+    populateChart()
 }
 
 main()
