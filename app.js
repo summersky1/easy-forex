@@ -19,12 +19,16 @@ let baseCurrency = 'GBP'
 let date = 'latest'
 let requestUrl = endpoint + date
 
-const queryParams = {
-    base: baseCurrency,
-    symbols: Object.keys(currencyInfo).join(',')
+function getQueryParams(baseCurrency) {
+    let targetCurrencies = Object.keys(currencyInfo)
+        .filter(c => c !== baseCurrency)
+    return {
+        base: baseCurrency,
+        symbols: targetCurrencies.join(',')
+    }
 }
 
-const getResults = async () => {  
+const getResults = async (queryParams) => {  
     try {
         const response = await axios.get(requestUrl, {
             params: queryParams
@@ -38,7 +42,6 @@ const getResults = async () => {
 
 function renderResults(jsonResponse) {
     let results = jsonResponse.rates
-    delete results[baseCurrency]
     
     let tableElement = document.createElement('table')
     tableElement.classList.add('table', 'table-bordered', 'table-hover', 'table-striped', 'mt-3')
@@ -71,15 +74,15 @@ function renderResults(jsonResponse) {
 }
 
 function generateFlagImageElement(currency) {
-    let tdFlag = document.createElement('img')
+    let imageElement = document.createElement('img')
     let countryCode = currencyInfo[currency]
-    tdFlag.src = `https://flagcdn.com/56x42/${countryCode}.png`
-    tdFlag.width = 28
-    tdFlag.classList.add('mr-2', 'mt-n1')
-    return tdFlag
+    imageElement.src = `https://flagcdn.com/56x42/${countryCode}.png`
+    imageElement.width = 28
+    imageElement.classList.add('mr-2', 'mt-n1')
+    return imageElement
 }
 
-function renderBaseCurrencySelection() {
+function setupBaseCurrencySelection() {
     for (const currency of Object.keys(currencyInfo)) {
         let optionElement = document.createElement('option')
         optionElement.innerHTML = '&nbsp;&nbsp;' + currency
@@ -88,20 +91,21 @@ function renderBaseCurrencySelection() {
         }
         baseCurrencySelect.appendChild(optionElement)
     }
+    baseCurrencySelect.addEventListener('change', updateRates)
+}
+
+function updateRates(event) {
+    event.preventDefault()
+    while(displayElement.firstChild) {
+        displayElement.removeChild(displayElement.lastChild)
+    }
+    baseCurrency = this.value.trim()
+    getResults(getQueryParams(baseCurrency))
 }
 
 function main() {
-    baseCurrencySelect.addEventListener('change', function(event) {
-        event.preventDefault()
-        while(displayElement.firstChild){
-            displayElement.removeChild(displayElement.lastChild)
-        }
-        baseCurrency = this.value.trim()
-        queryParams.base = baseCurrency
-        getResults()
-    })
-    renderBaseCurrencySelection()
-    getResults()
+    setupBaseCurrencySelection()
+    getResults(getQueryParams(baseCurrency))
 }
 
 main()
