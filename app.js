@@ -94,8 +94,7 @@ function setupBaseCurrencySelection() {
     baseCurrencySelect.addEventListener('change', updateRates)
 }
 
-function updateRates(event) {
-    event.preventDefault()
+function updateRates() {
     while(displayElement.firstChild) {
         displayElement.removeChild(displayElement.lastChild)
     }
