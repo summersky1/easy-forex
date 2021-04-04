@@ -17,7 +17,6 @@ const currencyInfo = {
 
 let baseCurrency = 'GBP'
 let date = 'latest'
-let requestUrl = endpoint + date
 
 function getQueryParams(baseCurrency) {
     let targetCurrencies = Object.keys(currencyInfo)
@@ -30,7 +29,7 @@ function getQueryParams(baseCurrency) {
 
 const getResults = async (queryParams) => {  
     try {
-        const response = await axios.get(requestUrl, {
+        const response = await axios.get(endpoint + date, {
             params: queryParams
         })
         renderResults(response.data)
@@ -89,19 +88,35 @@ function setupBaseCurrencySelection() {
         }
         baseCurrencySelect.appendChild(optionElement)
     }
-    baseCurrencySelect.addEventListener('change', updateRates)
+    baseCurrencySelect.addEventListener('change', function() {
+        baseCurrency = this.value.trim().substring(0,3)
+        updateResults()
+    })
 }
 
-function updateRates() {
+function setupDateSelection() {
+    flatpickr('#dateInput', {
+        altInput: true,
+        altFormat: "J F Y",
+        dateFormat: "Y-m-d",
+        maxDate: "today",
+        onChange: function(selectedDates, dateStr, instance) {
+            date = dateStr
+            updateResults()
+        },
+    })
+}
+
+function updateResults() {
     while(displayElement.firstChild) {
         displayElement.removeChild(displayElement.lastChild)
     }
-    baseCurrency = this.value.trim().substring(0,3)
     getResults(getQueryParams(baseCurrency))
 }
 
 function main() {
     setupBaseCurrencySelection()
+    setupDateSelection()
     getResults(getQueryParams(baseCurrency))
 }
 
