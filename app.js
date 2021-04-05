@@ -18,12 +18,15 @@ const currencyInfo = {
 let baseCurrency = 'GBP'
 let specifiedDate = 'latest'
 
-function getQueryParams(baseCurrency) {
-    let targetCurrencies = Object.keys(currencyInfo)
+function getTargetCurrencies(baseCurrency) {
+    return Object.keys(currencyInfo)
         .filter(c => c !== baseCurrency)
+}
+
+function getQueryParams(baseCurrency) {
     return {
         base: baseCurrency,
-        symbols: targetCurrencies.join(',')
+        symbols: getTargetCurrencies(baseCurrency).join(',')
     }
 }
 
@@ -57,9 +60,7 @@ function displayRates(rates) {
     tableElement.appendChild(tBodyElement)
 
     tBodyElement.appendChild(generateTableRow(baseCurrency, 1)) // add base currency first to top of table
-    let targetCurrencies = Object.keys(currencyInfo)
-        .filter(c => c !== baseCurrency)
-    targetCurrencies.forEach(currency => {
+    getTargetCurrencies(baseCurrency).forEach(currency => {
         tBodyElement.appendChild(generateTableRow(currency, rates[currency]))
     })
     currentRatesDisplayElement.appendChild(tableElement)
@@ -134,9 +135,7 @@ async function fetchHistoricalRates() {
     let responseList = await Promise.all(promises)
 
     const historicalData = {}
-    let targetCurrencies = Object.keys(currencyInfo)
-        .filter(c => c !== baseCurrency)
-    targetCurrencies.forEach(currency => {
+    getTargetCurrencies(baseCurrency).forEach(currency => {
         let currencyPair = baseCurrency + "/" + currency
         historicalData[currencyPair] = []
         for (let i = 0; i < dates.length; i++) {
