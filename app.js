@@ -102,7 +102,8 @@ function setupBaseCurrencySelection() {
     }
     baseCurrencySelect.addEventListener('change', function() {
         baseCurrency = this.value.trim().substring(0,3)
-        updateResults()
+        updateCurrentRates()
+        updateHistoricalRates()
     })
 }
 
@@ -114,12 +115,12 @@ function setupDateSelection() {
         maxDate: "today",
         onChange: function(selectedDates, dateStr, instance) {
             specifiedDate = dateStr
-            updateResults()
+            updateCurrentRates()
         },
     })
 }
 
-function updateResults() {
+function updateCurrentRates() {
     while(currentRatesDisplayElement.firstChild) {
         currentRatesDisplayElement.removeChild(currentRatesDisplayElement.lastChild)
     }
@@ -188,6 +189,13 @@ function formatDateForChart(dateString) {
     let dateParts = dateString.split('-')
     let month = dateParts[1]
     return months[month - 1]
+}
+
+function updateHistoricalRates() {
+    while(historicalRateChartsElement.firstChild) {
+        historicalRateChartsElement.removeChild(historicalRateChartsElement.lastChild)
+    }
+    fetchHistoricalRatesAndDisplayCharts()
 }
 
 function main() {
