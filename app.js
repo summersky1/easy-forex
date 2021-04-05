@@ -71,13 +71,13 @@ function generateTableRow(currency, rate) {
     currencyElement.appendChild(generateFlagImageElement(currency))
     currencyElement.appendChild(document.createTextNode(currency))
     let rateElement = document.createElement('td')
-    rateElement.appendChild(document.createTextNode(rate))
+    rateElement.appendChild(document.createTextNode(rate.toFixed(2)))
 
     let rowElement = document.createElement('tr')
     rowElement.appendChild(currencyElement)
     rowElement.appendChild(rateElement)
     if (currency === baseCurrency) {
-        rowElement.classList.add('bg-primary', 'text-light')
+        rowElement.classList.add('bg-info', 'text-light')
     }
     return rowElement
 }
