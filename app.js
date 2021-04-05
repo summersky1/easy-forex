@@ -155,12 +155,10 @@ async function fetchHistoricalRatesAndDisplayCharts() {
     Object.keys(historicalData).forEach(currencyPair => {
         let columnElement = document.createElement('div')
         columnElement.classList.add('col-md-6', 'p-2', 'animate__animated', 'animate__fadeIn')
+        columnElement.innerHTML = `<b class="d-block">${currencyPair}</b>`
 
         let currencyPairRates = historicalData[currencyPair].map(pair => pair.y)
-        let standardDeviation = math.std(currencyPairRates)
-        let mean = math.mean(currencyPairRates)
-        let coefficientOfVariation = (standardDeviation / mean) * 100
-        columnElement.appendChild(document.createTextNode(`${currencyPair} | std dev: ${standardDeviation.toFixed(2)} | cv: ${coefficientOfVariation.toFixed(1)}%`))
+        calculateAndAddStatistics(currencyPairRates, columnElement)
 
         let canvasElement = document.createElement('canvas')
         canvasElement.id = currencyPair
@@ -204,6 +202,15 @@ function updateHistoricalRates() {
         historicalRateChartsElement.removeChild(historicalRateChartsElement.lastChild)
     }
     fetchHistoricalRatesAndDisplayCharts()
+}
+
+function calculateAndAddStatistics(currencyPairRates, element) {
+    let standardDeviation = math.std(currencyPairRates)
+    let mean = math.mean(currencyPairRates)
+    let coefficientOfVariation = (standardDeviation / mean) * 100
+    element.innerHTML += `<em>Mean</em>: ${mean.toFixed(2)} | 
+        <em>Standard deviation</em>: ${standardDeviation.toFixed(2)} | 
+        <em>CV</em>: ${coefficientOfVariation.toFixed(1)}%`
 }
 
 function main() {
