@@ -148,13 +148,22 @@ async function fetchHistoricalRates() {
 
 async function fetchHistoricalRatesAndDisplayCharts() {
     let historicalData = await fetchHistoricalRates()
+
     Chart.defaults.font.size = 16;
+    Chart.defaults.plugins.legend.display = false;
 
     Object.keys(historicalData).forEach(currencyPair => {
-        let canvasElement = document.createElement('canvas')
-        canvasElement.id = currencyPair
         let columnElement = document.createElement('div')
         columnElement.classList.add('col-md-6', 'p-2', 'animate__animated', 'animate__fadeIn')
+
+        let currencyPairRates = historicalData[currencyPair].map(pair => pair.y)
+        let standardDeviation = math.std(currencyPairRates)
+        let mean = math.mean(currencyPairRates)
+        let coefficientOfVariation = (standardDeviation / mean) * 100
+        columnElement.appendChild(document.createTextNode(`${currencyPair} | std dev: ${standardDeviation.toFixed(2)} | cv: ${coefficientOfVariation.toFixed(1)}%`))
+
+        let canvasElement = document.createElement('canvas')
+        canvasElement.id = currencyPair
         columnElement.appendChild(canvasElement)
         historicalRateChartsElement.appendChild(columnElement)
 
@@ -163,7 +172,6 @@ async function fetchHistoricalRatesAndDisplayCharts() {
             type: 'line',
             data: {
                 datasets: [{
-                    label: currencyPair,
                     data: historicalData[currencyPair],
                     borderColor: 'rgb(75, 192, 192)',
                     tension: 0.2,
