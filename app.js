@@ -57,9 +57,11 @@ function displayRates(rates) {
     tableElement.appendChild(tBodyElement)
 
     tBodyElement.appendChild(generateTableRow(baseCurrency, 1)) // add base currency first to top of table
-    for (const [currency, rate] of Object.entries(rates)) {
-        tBodyElement.appendChild(generateTableRow(currency, rate))
-    }
+    let targetCurrencies = Object.keys(currencyInfo)
+        .filter(c => c !== baseCurrency)
+    targetCurrencies.forEach(currency => {
+        tBodyElement.appendChild(generateTableRow(currency, rates[currency]))
+    })
     currentRatesDisplayElement.appendChild(tableElement)
 }
 
