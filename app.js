@@ -127,7 +127,7 @@ function updateResults() {
 }
 
 async function fetchHistoricalRates() {
-    const dates = ['2021-01-01','2021-02-01','2021-03-01','2021-04-01']
+    const dates = getPastYearDates()
     const promises = []
     dates.forEach(date => {
         promises.push(fetchRates(getQueryParams(baseCurrency), date))
@@ -170,6 +170,17 @@ async function fetchHistoricalRatesAndDisplayCharts() {
             },
         })
     })
+}
+
+function getPastYearDates() {
+    let dates = []
+    for (let i = 11; i >= 0; i--) {
+        let date = new Date()
+        date.setDate(1)
+        date.setMonth(date.getMonth() - i)
+        dates.push(date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate()) // format yyyy-m-d
+    }
+    return dates
 }
 
 function main() {
