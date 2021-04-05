@@ -153,7 +153,7 @@ async function fetchHistoricalRatesAndDisplayCharts() {
         let canvasElement = document.createElement('canvas')
         canvasElement.id = currencyPair
         let columnElement = document.createElement('div')
-        columnElement.classList.add('col-md-6', 'p-1')
+        columnElement.classList.add('col-md-6', 'p-1', 'animate__animated', 'animate__fadeIn')
         columnElement.appendChild(canvasElement)
         historicalRateChartsElement.appendChild(columnElement)
 
