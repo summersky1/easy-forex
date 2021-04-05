@@ -1,5 +1,5 @@
-const displayElement = document.querySelector('#display')
-const chart = setupChart()
+const currentRatesDisplayElement = document.querySelector('#currentRatesDisplay')
+const historicalRateChartsElement = document.querySelector('#historicalRateCharts')
 const baseCurrencySelect = document.querySelector('#baseCurrencySelect')
 
 const endpoint = 'https://api.ratesapi.io/api/'
@@ -10,8 +10,7 @@ const currencyInfo = {
     JPY: { countryCode: 'jp', name: 'Japanese Yen' },
     CAD: { countryCode: 'ca', name: 'Canadian Dollar' },
     AUD: { countryCode: 'au', name: 'Australian Dollar' },
-    KRW: { countryCode: 'kr', name: 'South Korean Won' },
-    SGD: { countryCode: 'sg', name: 'Singapore Dollar' },
+    CHF: { countryCode: 'ch', name: 'Swiss Franc' },
     HKD: { countryCode: 'hk', name: 'Hong Kong Dollar' },
     INR: { countryCode: 'in', name: 'Indian Rupee' },
 }
@@ -61,7 +60,7 @@ function displayRates(rates) {
     for (const [currency, rate] of Object.entries(rates)) {
         tBodyElement.appendChild(generateTableRow(currency, rate))
     }
-    displayElement.appendChild(tableElement)
+    currentRatesDisplayElement.appendChild(tableElement)
 }
 
 function generateTableRow(currency, rate) {
@@ -118,46 +117,65 @@ function setupDateSelection() {
 }
 
 function updateResults() {
-    while(displayElement.firstChild) {
-        displayElement.removeChild(displayElement.lastChild)
+    while(currentRatesDisplayElement.firstChild) {
+        currentRatesDisplayElement.removeChild(currentRatesDisplayElement.lastChild)
     }
     fetchAndDisplayRates(getQueryParams(baseCurrency))
 }
 
-async function populateChart() {
+async function fetchHistoricalRates() {
     const dates = ['2021-01-01','2021-02-01','2021-03-01','2021-04-01']
     const promises = []
     dates.forEach(date => {
         promises.push(fetchRates(getQueryParams(baseCurrency), date))
     })
     let responseList = await Promise.all(promises)
-    for (let i = 0; i < dates.length; i++) {
-        chart.data.datasets[0].data.push({ x: dates[i], y: responseList[i].rates.USD })
-    }
-    chart.update()
+
+    const historicalData = {}
+    let targetCurrencies = Object.keys(currencyInfo)
+        .filter(c => c !== baseCurrency)
+    targetCurrencies.forEach(currency => {
+        let currencyPair = baseCurrency + "/" + currency
+        historicalData[currencyPair] = []
+        for (let i = 0; i < dates.length; i++) {
+            historicalData[currencyPair].push({ x: dates[i], y: responseList[i].rates[currency] })
+        }
+    })
+    return historicalData
 }
 
-function setupChart() {
-    let ctx = document.querySelector('#chartCanvas').getContext('2d');
-    return new Chart(ctx, {
-        type: 'line',
-        data: {
-            datasets: [
-                {
-                    label: 'GBP/USD',
+async function fetchHistoricalRatesAndDisplayCharts() {
+    let historicalData = await fetchHistoricalRates()
+    Chart.defaults.font.size = 16;
+
+    Object.keys(historicalData).forEach(currencyPair => {
+        let canvasElement = document.createElement('canvas')
+        canvasElement.id = currencyPair
+        let columnElement = document.createElement('div')
+        columnElement.classList.add('col-md-6', 'p-1')
+        columnElement.appendChild(canvasElement)
+        historicalRateChartsElement.appendChild(columnElement)
+
+        let context = canvasElement.getContext('2d')
+        let chart = new Chart(context, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: currencyPair,
+                    data: historicalData[currencyPair],
                     borderColor: 'rgb(75, 192, 192)',
                     tension: 0.2,
-                },
-            ]
-        },
-    });
+                }]
+            },
+        })
+    })
 }
 
 function main() {
     setupBaseCurrencySelection()
     setupDateSelection()
     fetchAndDisplayRates(getQueryParams(baseCurrency))
-    populateChart()
+    fetchHistoricalRatesAndDisplayCharts()
 }
 
 main()
