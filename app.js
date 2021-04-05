@@ -139,7 +139,7 @@ async function fetchHistoricalRates() {
         let currencyPair = baseCurrency + "/" + currency
         historicalData[currencyPair] = []
         for (let i = 0; i < dates.length; i++) {
-            historicalData[currencyPair].push({ x: dates[i], y: responseList[i].rates[currency] })
+            historicalData[currencyPair].push({ x: formatDateForChart(dates[i]), y: responseList[i].rates[currency] })
         }
     })
     return historicalData
@@ -153,7 +153,7 @@ async function fetchHistoricalRatesAndDisplayCharts() {
         let canvasElement = document.createElement('canvas')
         canvasElement.id = currencyPair
         let columnElement = document.createElement('div')
-        columnElement.classList.add('col-md-6', 'p-1', 'animate__animated', 'animate__fadeIn')
+        columnElement.classList.add('col-md-6', 'p-2', 'animate__animated', 'animate__fadeIn')
         columnElement.appendChild(canvasElement)
         historicalRateChartsElement.appendChild(columnElement)
 
@@ -181,6 +181,13 @@ function getPastYearDates() {
         dates.push(date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate()) // format yyyy-m-d
     }
     return dates
+}
+
+function formatDateForChart(dateString) {
+    let months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    let dateParts = dateString.split('-')
+    let month = dateParts[1]
+    return months[month - 1]
 }
 
 function main() {
