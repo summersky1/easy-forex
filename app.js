@@ -1,7 +1,3 @@
-const currentRatesDisplayElement = document.querySelector('#currentRatesDisplay')
-const historicalRateChartsElement = document.querySelector('#historicalRateCharts')
-const baseCurrencySelect = document.querySelector('#baseCurrencySelect')
-
 const endpoint = 'https://api.ratesapi.io/api/'
 const currencyInfo = {
     GBP: { countryCode: 'gb', name: 'British Pound' },
@@ -14,6 +10,10 @@ const currencyInfo = {
     HKD: { countryCode: 'hk', name: 'Hong Kong Dollar' },
     INR: { countryCode: 'in', name: 'Indian Rupee' },
 }
+
+const currentRatesDisplayElement = document.querySelector('#currentRatesDisplay')
+const historicalRateChartsElement = document.querySelector('#historicalRateCharts')
+const baseCurrencySelect = document.querySelector('#baseCurrencySelect')
 
 let baseCurrency = 'GBP'
 let specifiedDate = 'latest'
@@ -30,7 +30,7 @@ function getQueryParams(baseCurrency) {
     }
 }
 
-async function fetchRates(queryParams, date = null) {  
+async function fetchRates(date = null) {  
     try {
         let requestUrl = endpoint
         if (date === null) {
@@ -39,7 +39,7 @@ async function fetchRates(queryParams, date = null) {
             requestUrl += date
         }
         const response = await axios.get(requestUrl, {
-            params: queryParams
+            params: getQueryParams(baseCurrency)
         })
         return response.data
     }
@@ -48,8 +48,8 @@ async function fetchRates(queryParams, date = null) {
     }
 }
 
-async function fetchAndDisplayRates(queryParams) {
-    let jsonResponse = await fetchRates(queryParams)
+async function fetchAndDisplayRates() {
+    let jsonResponse = await fetchRates()
     displayRates(jsonResponse.rates)
 }
 
@@ -124,14 +124,14 @@ function updateCurrentRates() {
     while(currentRatesDisplayElement.firstChild) {
         currentRatesDisplayElement.removeChild(currentRatesDisplayElement.lastChild)
     }
-    fetchAndDisplayRates(getQueryParams(baseCurrency))
+    fetchAndDisplayRates()
 }
 
 async function fetchHistoricalRates() {
     const dates = getPastYearDates()
     const promises = []
     dates.forEach(date => {
-        promises.push(fetchRates(getQueryParams(baseCurrency), date))
+        promises.push(fetchRates(date))
     })
     let responseList = await Promise.all(promises)
 
@@ -158,7 +158,7 @@ async function fetchHistoricalRatesAndDisplayCharts() {
         columnElement.innerHTML = `<b class="d-block">${currencyPair}</b>`
 
         let currencyPairRates = historicalData[currencyPair].map(pair => pair.y)
-        calculateAndAddStatistics(currencyPairRates, columnElement)
+        calculateAndDisplayStatistics(currencyPairRates, columnElement)
 
         let canvasElement = document.createElement('canvas')
         canvasElement.id = currencyPair
@@ -204,7 +204,7 @@ function updateHistoricalRates() {
     fetchHistoricalRatesAndDisplayCharts()
 }
 
-function calculateAndAddStatistics(currencyPairRates, element) {
+function calculateAndDisplayStatistics(currencyPairRates, element) {
     let standardDeviation = math.std(currencyPairRates)
     let mean = math.mean(currencyPairRates)
     let coefficientOfVariation = (standardDeviation / mean) * 100
@@ -216,7 +216,7 @@ function calculateAndAddStatistics(currencyPairRates, element) {
 function main() {
     setupBaseCurrencySelection()
     setupDateSelection()
-    fetchAndDisplayRates(getQueryParams(baseCurrency))
+    fetchAndDisplayRates()
     fetchHistoricalRatesAndDisplayCharts()
 }
 
