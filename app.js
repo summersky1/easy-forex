@@ -71,7 +71,7 @@ function generateTableRow(currency, rate) {
     currencyElement.appendChild(generateFlagImageElement(currency))
     currencyElement.appendChild(document.createTextNode(currency))
     let rateElement = document.createElement('td')
-    rateElement.appendChild(document.createTextNode(rate.toFixed(2)))
+    rateElement.appendChild(document.createTextNode(rate.toPrecision(4)))
 
     let rowElement = document.createElement('tr')
     rowElement.appendChild(currencyElement)
